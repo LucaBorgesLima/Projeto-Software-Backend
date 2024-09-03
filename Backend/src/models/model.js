@@ -1,6 +1,7 @@
 // Arquivo das funcoes 
 
 //conexao com banco
+const { query } = require("express");
 const banco = require("./banco");
 
 // funcao que mostra todos os carros cadastrados no banco de dados e nome dos donos
@@ -27,8 +28,30 @@ const cadastro_cliente = async (clientes) => {
 
 };
 
+// Funcao para Add carro a uma vaga marcando horario 
+
+const add_vaga = async (vagaAdd) => {
+    const {vaga,placa,} = vagaAdd;
+    const horario_entrada = new Date();
+    const query = 'INSERT INTO registros (vaga, placa,horario_entrada) VALUES (?, ?, ?)'
+    const add = await banco.execute(query,[vaga,placa,horario_entrada]);
+    return add
+};
+
+// funcao para mostra horario da saida do carro 
+
+const saida_vaga = async (saida) => {
+    const {vaga,placa,} = saida;
+    const horario_saida = new Date();
+    const query =  'UPDATE registros SET horario_saida = ? WHERE numero_vaga = ? AND placa_veiculo = ? AND horario_saida IS NULL'
+    const saida_carro = await banco.execute(query,[vaga,placa,horario_saida]);
+    return saida_carro
+}
+
 module.exports = {
     Verdados,
     cadastro,
-    cadastro_cliente
+    cadastro_cliente,
+    add_vaga,
+    saida_vaga
 };
