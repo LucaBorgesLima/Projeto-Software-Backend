@@ -2,9 +2,15 @@
 
 const express = require('express');
 const router = express.Router();
-const controle = require('./controle/cad_controle')
+const controle = require('./controle/controle')
 
-//Rota para ver os dos Cadastro Carro
+//Rota para ver cadastro de Carro
 router.get('/cadastros',controle.getCadastro_carros )
+
+//rota para cadastar carros
+router.post('/CadastrarCarro',controle.Postcadastro_carro)
+
+// rota para cadastrar cliente 
+router.post('/CadastrarCliente',controle.cadastrar_cliente)
 
 module.exports = router;
