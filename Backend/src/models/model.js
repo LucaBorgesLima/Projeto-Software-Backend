@@ -3,55 +3,102 @@
 //conexao com banco
 const { query } = require("express");
 const banco = require("./banco");
+const { DATETIME } = require("mysql/lib/protocol/constants/types");
 
-// funcao que mostra todos os carros cadastrados no banco de dados e nome dos donos
-const  Verdados = async () =>{
-    const carros = await banco.execute('select c.nome, v.modelo, v.cor , v.placa ,c.telefone  from veiculos v  inner join clientes c on c.id_cliente = v.clientes_id_cliente ;');
-    return carros[0] ;
+//HTTP GET
+
+// Visualizar as Vagas e Status
+const statosVaga = async () => {
+    const queryStatus = 'SELECT * FROM vaga';
+    const [result] = await banco.execute(queryStatus);
+    return result
 };
 
-//funcao para add cadastro de um carro no banco de dados 
-const cadastro = async (carro) => {
-    const {modelo,placa,cor,clientes_id_cliente} = carro;
-    const query = 'INSERT INTO veiculos (modelo,cor,placa,clientes_id_cliente) VALUES (?,?,?,?)';
-    const cadastrar = await banco.execute(query,[modelo,cor,placa,clientes_id_cliente]);
-    return cadastrar [0];
+////////////////////////////////////////////////////////////////////////////////////////
 
+//HTTP POST
+
+//Cadatro Cliente 
+const cliente = async (pessoa) => {
+    const { nome, telefone } = pessoa;
+    const query = 'INSERT INTO cliente (nome, telefone) VALUES (?, ?)';
+    const [result] = await banco.execute(query, [nome, telefone]); 
+        
+    return { idcliente: result.insertId, nome, telefone }; 
 };
 
-//funcao para add cadastro de um cliente no banco de dados 
-const cadastro_cliente = async (clientes) => {
-    const {nome,telefone,email} = clientes;
-    const query = 'INSERT INTO clientes (nome,telefone,email) VALUES (?,?,?)';
-    const cadastrar_cliente = await banco.execute(query,[nome,telefone,email]);
-    return cadastrar_cliente [0];
-
+//Cadastro Veiculo
+const veiculo = async (car) => {
+    const { placa, cor, modelo, marca, cliente_idcliente } = car;
+    
+    // Inserir marca e obter o idmarca
+    const queryMarca = 'INSERT INTO marca (marca) VALUES (?) ON DUPLICATE KEY UPDATE idmarca=LAST_INSERT_ID(idmarca)';
+    const [resultMarca] = await banco.execute(queryMarca, [marca]);
+    const idmarca = resultMarca.insertId;  
+    
+    // Inserir modelo com o idmarca associado e obter idmodelo
+    const queryModelo = 'INSERT INTO modelo (modelo, marca_idmarca) VALUES (?, ?) ON DUPLICATE KEY UPDATE idmodelo=LAST_INSERT_ID(idmodelo)';
+    const [resultModelo] = await banco.execute(queryModelo, [modelo, idmarca]);
+    const idmodelo = resultModelo.insertId;
+    
+    // Inserir veículo com idmodelo e cliente_idcliente
+    const queryVeiculo = 'INSERT INTO veiculo (placa, cor, cliente_idcliente, modelo_idmodelo) VALUES (?, ?, ?, ?)';
+    const [resultVeiculo] = await banco.execute(queryVeiculo, [placa, cor, cliente_idcliente, idmodelo]);
+    
+    return {
+        veiculo: resultVeiculo,
+        modelo: resultModelo,
+        marca: resultMarca};
 };
 
-// Funcao para Add carro a uma vaga marcando horario 
+// Cadastro Veiculo a Vaga 
+const vaga = async (stato) => {
+    const {numero,status} = stato;
 
-const add_vaga = async (vagaAdd) => {
-    const {vaga,placa,} = vagaAdd;
-    const horario_entrada = new Date();
-    const query = 'INSERT INTO registros (vaga, placa,horario_entrada) VALUES (?, ?, ?)'
-    const add = await banco.execute(query,[vaga,placa,horario_entrada]);
-    return add
+    const queryVaga = 'INSERT INTO vaga (numero,status) VALUES (?,?)'
+    
+    const [result] =await banco.execute(queryVaga,[numero,status]);
+
+    return {idvaga:result.insertId,
+        numero,
+        status
+    }; 
 };
 
-// funcao para mostra horario da saida do carro 
+// HTTP PUT
 
-const saida_vaga = async (saida) => {
-    const {vaga,placa,} = saida;
-    const horario_saida = new Date();
-    const query =  'UPDATE registros SET horario_saida = ? WHERE numero_vaga = ? AND placa_veiculo = ? AND horario_saida IS NULL'
-    const saida_carro = await banco.execute(query,[vaga,placa,horario_saida]);
-    return saida_carro
-}
+const BuscarVaga = async(idvaga) => {
+    const query = 'SELECT * FROM vaga WHERE idvaga = ?'
+    const [result] = await banco.execute(query,[idvaga]);
+
+    return result
+};
+
+const EntradaVaga = async (add) =>{
+    const {status,veiculo_idveiculo,idvaga} = add;
+    const horario_entrada = new Date().toISOString().slice(0,19).replace('T',' ');
+
+    //verificar se tem a vaga
+    const vagaExiste = await BuscarVaga(idvaga);
+    if(!vagaExiste) {
+        throw new Error('Vaga Nao existe');
+    };
+
+    const queryUp = 'UPDATE vaga SET status = ? ,horario_entrada = ? ,veiculo_idveiculo = ? WHERE idvaga = ?';
+
+    const[result] = await banco.execute(queryUp,[status,horario_entrada,veiculo_idveiculo,idvaga]);
+
+    return result;
+};
+
+
+
+// Adicionar Veiculo a uma vaga
 
 module.exports = {
-    Verdados,
-    cadastro,
-    cadastro_cliente,
-    add_vaga,
-    saida_vaga
+    cliente,
+    veiculo,
+    vaga,
+    statosVaga,
+    EntradaVaga
 };

@@ -2,21 +2,19 @@
 
 const express = require('express');
 const router = express.Router();
-const controle = require('./controle/controle')
+const controle = require('./controle/controle');
+const { put } = require('request');
 
-//Rota para ver cadastro de Carro
-router.get('/cadastros',controle.getCadastro_carros )
+//Rota Cadastrar Cliente/Veiculo
+router.post('/Cadastro',controle.cadastrarClienteEVeiculo );
 
-//rota para cadastar carros
-router.post('/CadastrarCarro',controle.Postcadastro_carro)
+// Rota Cadastrar vagas
+router.post('/vagas',controle.cadastrarVaga);
 
-// rota para cadastrar cliente 
-router.post('/CadastrarCliente',controle.cadastrar_cliente)
+//Rota para ver vagas
+router.get('/verVaga',controle.statos);
 
-// rota para cadastrar a uma vaga no estacionamento 
-router.post('/vagaEntrada',controle.cadastro_vaga)
+//Rota para add carro a uma vaga
+router.put('/vagas',controle.addVaga);
 
-// rota mostra horario da saida do carro 
-router.post('/vagaSaida',controle.saida_carro)
-
-module.exports = router;
+module.exports = router;  

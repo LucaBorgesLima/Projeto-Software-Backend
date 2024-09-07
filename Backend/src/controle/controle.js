@@ -1,41 +1,50 @@
-// Arquivo de rotas
+// Arquivo de controle
 
 const model = require('../models/model');
 
-//rota: mostra todos os donos e carros cadastrados que esta no banco de dados
-const getCadastro_carros = async (req,res) => {
 
-    const cadastros  = await model.Verdados();
-    return res.status(200).json(cadastros);
+const cadastrarClienteEVeiculo = async (req, res) => {
+    
+    //  Cadastrar cliente e obter o idcliente
+    const clienteResult = await model.cliente(req.body);
+
+    //  Preparar os dados do veículo, adicionando o cliente_idcliente
+    const veiculoData = {
+        ...req.body.veiculo,
+        cliente_idcliente: clienteResult.idcliente
+    };
+
+    // Cadastrar veículo usando o idcliente
+    const veiculoResult = await model.veiculo(veiculoData);
+
+    // Retornar resposta com sucesso
+        return res.status(201).json({
+            message: 'Cliente e veículo cadastrados com sucesso!',
+            cliente: clienteResult,
+            veiculo: veiculoResult
+        });
+    
 };
 
-// rota : para cadastrar carros no banco de dados 
-const Postcadastro_carro = async (req,res) => {
-    const resultado = await model.cadastro(req.body);
-    return res.status(201).json(resultado)
-};
-
-// rota : para cadastrar cliente no banco de dados 
-const cadastrar_cliente = async (req,res) => {
-    const cliente = await model.cadastro_cliente(req.body);
-    return res.status(202).json(cliente)
+const cadastrarVaga = async (req,res) => {
+    const CadVaga = await model.vaga(req.body);
+    return res.status(202).json(CadVaga)
 
 };
-// rota : cadastrar a vaga 
-const cadastro_vaga = async (req,res) => {
-    const add = await model.add_vaga(req.body);
-    return res.status(203).json(add)
-};
 
-const saida_carro = async (req,res) => {
-    const sair = await model.saida_vaga(req.body);
-    return res.status(204).json(sair)
+const statos = async (req,res) => {
+    const vagaStatos = await model.statosVaga();
+    return res.status(203).json(vagaStatos)
 }
 
-module.exports = {
-    getCadastro_carros,
-    Postcadastro_carro,
-    cadastrar_cliente,
-    cadastro_vaga,
-    saida_carro,
-};
+const addVaga = async (req,res) => {
+    const add = await model.EntradaVaga(req.body);
+    return res.status(204).json(add)
+}
+module.exports = { cadastrarClienteEVeiculo,
+    cadastrarVaga,
+    statos,
+    addVaga
+
+
+}
