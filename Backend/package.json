@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon src/serve.js"
+    "dev": "nodemon src/serve.js",
+    "start": "node src/serve.js"
   },
   "keywords": [],
   "author": "",
