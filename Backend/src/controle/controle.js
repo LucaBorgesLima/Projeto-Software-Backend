@@ -33,7 +33,7 @@ const cadastrarVaga = async (req,res) => {
 };
 
 const statos = async (req,res) => {
-    const vagaStatos = await model.statosVaga();
+    const vagaStatos = await model.statusVaga();
     return res.status(203).json(vagaStatos)
 }
 
@@ -41,10 +41,23 @@ const addVaga = async (req,res) => {
     const add = await model.EntradaVaga(req.body);
     return res.status(204).json(add)
 }
+
+const saida = async (req,res) => {
+    const sair = await model.saida(req.body);
+    return res.status(205).json(sair)
+}
+
+const statusVaga = async (req,res) => {
+    const vaga = await model.statu(req.body);
+    return res.status(207).json(vaga)
+}
+
 module.exports = { cadastrarClienteEVeiculo,
     cadastrarVaga,
     statos,
-    addVaga
+    addVaga,
+    saida,
+    statusVaga
 
 
 }

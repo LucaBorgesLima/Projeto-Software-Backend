@@ -17,4 +17,10 @@ router.get('/verVaga',controle.statos);
 //Rota para add carro a uma vaga
 router.put('/vagas',controle.addVaga);
 
+//Rota para add o horario de saida do carro
+router.put('/saida',controle.saida);
+
+//Mudar status da vaga para livre quando carro sair
+router.put('/statusvaga',controle.statusVaga);
+
 module.exports = router;  

@@ -1,22 +1,24 @@
-// Arquivo das funcoes 
-
 //conexao com banco
 const { query } = require("express");
 const banco = require("./banco");
 const { DATETIME } = require("mysql/lib/protocol/constants/types");
 
-//HTTP GET
+
 
 // Visualizar as Vagas e Status
-const statosVaga = async () => {
+const statusVaga = async () => {
     const queryStatus = 'SELECT * FROM vaga';
     const [result] = await banco.execute(queryStatus);
     return result
 };
 
-////////////////////////////////////////////////////////////////////////////////////////
+const BuscarVaga = async(idvaga) => {
+    const query = 'SELECT * FROM vaga WHERE idvaga = ?'
+    const [result] = await banco.execute(query,[idvaga]);
 
-//HTTP POST
+    return result
+};
+
 
 //Cadatro Cliente 
 const cliente = async (pessoa) => {
@@ -51,9 +53,10 @@ const veiculo = async (car) => {
         marca: resultMarca};
 };
 
-// Cadastro Veiculo a Vaga 
+// Cria uma vaga Livre
 const vaga = async (stato) => {
-    const {numero,status} = stato;
+    const {numero} = stato;
+    const status = 'Livre'
 
     const queryVaga = 'INSERT INTO vaga (numero,status) VALUES (?,?)'
     
@@ -65,18 +68,23 @@ const vaga = async (stato) => {
     }; 
 };
 
-// HTTP PUT
 
-const BuscarVaga = async(idvaga) => {
-    const query = 'SELECT * FROM vaga WHERE idvaga = ?'
-    const [result] = await banco.execute(query,[idvaga]);
-
-    return result
+//muda forma data e hora para o padrao Mysql
+const formatDateForMySQL = (date) => {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); 
+    const day = date.getDate().toString().padStart(2, '0'); 
+    const hours = date.getHours().toString().padStart(2, '0');
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const seconds = date.getSeconds().toString().padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
 };
 
+//Add carro a vaga e marca horario de entrada
 const EntradaVaga = async (add) =>{
-    const {status,veiculo_idveiculo,idvaga} = add;
-    const horario_entrada = new Date().toISOString().slice(0,19).replace('T',' ');
+    const {veiculo_idveiculo,idvaga} = add;
+    const horario_entrada = formatDateForMySQL(new Date());
+    const status = 'ocupado';
 
     //verificar se tem a vaga
     const vagaExiste = await BuscarVaga(idvaga);
@@ -91,14 +99,39 @@ const EntradaVaga = async (add) =>{
     return result;
 };
 
+//Finalizar o uso da vaga do veiculo e mostra horario da saida do carro
+const saida = async (vaga) => {
+    const horario_saida = formatDateForMySQL(new Date()) ;
+    const {idvaga} = vaga;
+
+    const query = 'UPDATE vaga SET horario_saida = ?  WHERE idvaga = ?';
+
+    const [result] = await banco.execute(query,[horario_saida,idvaga]);
+
+    return result;
+};
 
 
-// Adicionar Veiculo a uma vaga
+//Muda status da vaga quando fizer pagamento
+const statu = async (muda) =>{
+    const{idvaga}=muda;
+    const status = 'livre';
+    const horario_entrada = null;
+    const horario_saida = null;
+    const veiculo_idveiculo = null ;
+    const query = 'UPDATE vaga SET status = ? ,horario_entrada = ? ,horario_saida = ?,veiculo_idveiculo = ?  WHERE idvaga = ?';
 
+    const [result] = await banco.execute(query,[status,horario_entrada,horario_saida,veiculo_idveiculo,idvaga])
+
+    return result;
+};
+  
 module.exports = {
     cliente,
     veiculo,
     vaga,
-    statosVaga,
-    EntradaVaga
-};
+    statusVaga,
+    EntradaVaga,
+    saida,
+    statu
+};                           
