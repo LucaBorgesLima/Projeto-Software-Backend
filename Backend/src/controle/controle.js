@@ -51,13 +51,18 @@ const statusVaga = async (req,res) => {
     const vaga = await model.statu(req.body);
     return res.status(207).json(vaga)
 }
+const calculoTempo = async (req,res) => {
+    const tempo = await model.calculo(req.body);
+    return res.status(208).json(tempo)
+}
 
 module.exports = { cadastrarClienteEVeiculo,
     cadastrarVaga,
     statos,
     addVaga,
     saida,
-    statusVaga
+    statusVaga,
+    calculoTempo
 
 
 }

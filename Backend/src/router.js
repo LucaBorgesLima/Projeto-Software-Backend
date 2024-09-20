@@ -23,4 +23,8 @@ router.put('/saida',controle.saida);
 //Mudar status da vaga para livre quando carro sair
 router.put('/statusvaga',controle.statusVaga);
 
-module.exports = router;  
+//Tempo de permanencia do carro 
+router.post('/tempo',controle.calculoTempo);
+
+
+module.exports = router;           

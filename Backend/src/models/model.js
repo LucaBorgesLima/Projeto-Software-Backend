@@ -95,7 +95,7 @@ const EntradaVaga = async (add) =>{
     const queryUp = 'UPDATE vaga SET status = ? ,horario_entrada = ? ,veiculo_idveiculo = ? WHERE idvaga = ?';
 
     const[result] = await banco.execute(queryUp,[status,horario_entrada,veiculo_idveiculo,idvaga]);
-
+    
     return result;
 };
 
@@ -125,7 +125,34 @@ const statu = async (muda) =>{
 
     return result;
 };
-  
+
+
+//Funcao para fazer calculo de tempo
+const calculo = async(vagaid)=>{
+
+    const query = 'SELECT horario_entrada,horario_saida FROM vaga WHERE idvaga = ?';
+    const [result] = await banco.query(query,[vagaid]);
+    console.log('Resultado da consulta:', result[vagaid]);
+
+
+    const {horario_entrada,horario_saida} = result[0]
+
+    const HorarioEntradaDate = new Date (horario_entrada);
+    const HorarioSaidaDate = new Date (horario_saida);
+
+    const TempoEstacionado = HorarioSaidaDate - HorarioEntradaDate;
+    const horas = Math.floor(TempoEstacionado / (1000 * 60 * 60));
+    const minutos = Math.floor((TempoEstacionado % (1000 * 60 * 60)) / (1000 * 60));
+
+    return{
+        vagaid,
+        horarioEntrada: HorarioEntradaDate.toLocaleString(),
+        horarioSaida: HorarioSaidaDate.toLocaleString(),
+        tempoEstacionado: `${horas} horas e ${minutos} minutos`
+    }
+
+};
+          
 module.exports = {
     cliente,
     veiculo,
@@ -133,5 +160,6 @@ module.exports = {
     statusVaga,
     EntradaVaga,
     saida,
-    statu
-};                           
+    statu,
+    calculo
+};                               
