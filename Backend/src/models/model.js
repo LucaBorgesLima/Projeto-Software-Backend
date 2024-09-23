@@ -12,14 +12,6 @@ const statusVaga = async () => {
     return result
 };
 
-const BuscarVaga = async(idvaga) => {
-    const query = 'SELECT * FROM vaga WHERE idvaga = ?'
-    const [result] = await banco.execute(query,[idvaga]);
-
-    return result
-};
-
-
 //Cadatro Cliente 
 const cliente = async (pessoa) => {
     const { nome, telefone } = pessoa;
@@ -35,6 +27,7 @@ const veiculo = async (car) => {
     
     // Inserir marca e obter o idmarca
     const queryMarca = 'INSERT INTO marca (marca) VALUES (?) ON DUPLICATE KEY UPDATE idmarca=LAST_INSERT_ID(idmarca)';
+
     const [resultMarca] = await banco.execute(queryMarca, [marca]);
     const idmarca = resultMarca.insertId;  
     
@@ -68,7 +61,6 @@ const vaga = async (stato) => {
     }; 
 };
 
-
 //muda forma data e hora para o padrao Mysql
 const formatDateForMySQL = (date) => {
     const year = date.getFullYear();
@@ -84,19 +76,32 @@ const formatDateForMySQL = (date) => {
 const EntradaVaga = async (add) =>{
     const {veiculo_idveiculo,idvaga} = add;
     const horario_entrada = formatDateForMySQL(new Date());
-    const status = 'ocupado';
 
-    //verificar se tem a vaga
-    const vagaExiste = await BuscarVaga(idvaga);
-    if(!vagaExiste) {
-        throw new Error('Vaga Nao existe');
+    //Validar se o carro nao esta em uma vaga 
+    const ValidarCarro = 'SELECT  idvaga FROM vaga WHERE veiculo_idveiculo = ? AND status = "ocupado"';
+    const [ValidarQuery] = await banco.execute(ValidarCarro, [veiculo_idveiculo]);
+
+    if (ValidarQuery.length > 0) {
+        console.error('Erro Carro ja esta em uma vaga')
+        return;
+    }
+
+    //Validar se a vaga esta Livre
+    const validar = 'SELECT * FROM vaga WHERE idvaga = ?'
+    const [validarVaga] = await banco.execute(validar, [idvaga]);
+
+    if (validarVaga[0]?.status === 'livre') {
+        const status = 'ocupado';
+        const queryUp = 'UPDATE vaga SET status = ? ,horario_entrada = ? ,veiculo_idveiculo = ? WHERE idvaga = ?';
+
+        const[result] = await banco.execute(queryUp,[status,horario_entrada,veiculo_idveiculo,idvaga]);
+    
+        return result;
+        
+    }else {
+        console.error('ERRO VAGA NAO ESTA LIVRE OU NAO EXISTE')
     };
 
-    const queryUp = 'UPDATE vaga SET status = ? ,horario_entrada = ? ,veiculo_idveiculo = ? WHERE idvaga = ?';
-
-    const[result] = await banco.execute(queryUp,[status,horario_entrada,veiculo_idveiculo,idvaga]);
-    
-    return result;
 };
 
 //Finalizar o uso da vaga do veiculo e mostra horario da saida do carro
@@ -104,13 +109,20 @@ const saida = async (vaga) => {
     const horario_saida = formatDateForMySQL(new Date()) ;
     const {idvaga} = vaga;
 
-    const query = 'UPDATE vaga SET horario_saida = ?  WHERE idvaga = ?';
+    //Validar existe carro na vaga 
+    const ValidarVaga = 'SELECT  idvaga FROM vaga WHERE idvaga = ? AND veiculo_idveiculo IS NULL';
+    const [ValidarQuery] = await banco.execute(ValidarVaga, [idvaga]);
 
+    if (ValidarQuery.length > 0) {
+        console.error('Erro nao tem carro nessa vaga')
+        return;
+    };
+
+    const query = 'UPDATE vaga SET horario_saida = ?  WHERE idvaga = ?';
     const [result] = await banco.execute(query,[horario_saida,idvaga]);
 
     return result;
 };
-
 
 //Muda status da vaga quando fizer pagamento
 const statu = async (muda) =>{
@@ -126,15 +138,20 @@ const statu = async (muda) =>{
     return result;
 }; 
 
-
-//Funcao para fazer calculo de tempo
+//Funcao calculo/comprovante de uso
 const calculo = async (vagaid)=>{
 
-    console.log("vagaid:",vagaid);
-
     const query = 'SELECT horario_entrada,horario_saida FROM vaga WHERE idvaga = ?';
-    const [result] = await banco.query(query, [vagaid]);
-    console.log('Resultado da consulta:', result);
+    const [result] = await banco.execute(query, [vagaid]);
+
+    //Validar se o carro ja saiu da vaga 
+    const ValidarSaida = 'SELECT  idvaga FROM vaga WHERE idvaga = ? AND horario_saida IS NULL';
+    const [ValidarQuery] = await banco.execute(ValidarSaida, [vagaid]);
+
+    if (ValidarQuery.length > 0) {
+        console.error('Erro carro ainda nao saiu da vaga')
+        return;
+    };
 
     const horario_entrada = result[0].horario_entrada;
     const horario_saida = result[0].horario_saida;
@@ -146,15 +163,39 @@ const calculo = async (vagaid)=>{
     const horas = Math.floor(TempoEstacionado / (1000 * 60 * 60));
     const minutos = Math.floor((TempoEstacionado % (1000 * 60 * 60)) / (1000 * 60));
 
+    const ValorMinuto = minutos * 0.50;
+    const ValorHora = horas * 30 ;
+
+    const ValorTotal = ValorHora + ValorMinuto
+
+    //Add Info na tabela de orcamento
+    const preco = ValorTotal;
+    const data_criacao = formatDateForMySQL(new Date());
+    const vaga_idvaga = vagaid;
+
+    const into = 'INSERT INTO orcamento (preco,data_criacao,vaga_idvaga) VALUES (?,?,?)';
+    const [AddOrcamento] = await banco.execute(into,[preco,data_criacao,vaga_idvaga]);
+    const idorcamento = AddOrcamento.insertId;
+
+    const MostrarDado = `
+        SELECT ve.idveiculo, m.modelo, ve.placa, va.horario_entrada, va.horario_saida, o.preco
+        FROM vaga va
+        JOIN veiculo ve ON va.veiculo_idveiculo = ve.idveiculo
+        JOIN modelo m ON ve.modelo_idmodelo = m.idmodelo
+        JOIN orcamento o ON va.idvaga = o.vaga_idvaga
+        WHERE o.idorcamento = ?
+    `;
+
+    const [comprovante] = await banco.execute(MostrarDado, [idorcamento]);
+
     return{
-        vagaid,
-        horarioEntrada: HorarioEntradaDate.toLocaleString(),
-        horarioSaida: HorarioSaidaDate.toLocaleString(),
-        tempoEstacionado: `${horas} horas e ${minutos} minutos`
+        AddOrcamento,
+        comprovante,
+        Horas:horas,
+        Minutos:minutos
     }
 
 }; 
-
 
           
 module.exports = {

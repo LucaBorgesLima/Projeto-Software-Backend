@@ -27,4 +27,4 @@ router.put('/statusvaga',controle.statusVaga);
 router.post('/tempo',controle.calculoTempo);
 
 
-module.exports = router;                  
+module.exports = router;                    

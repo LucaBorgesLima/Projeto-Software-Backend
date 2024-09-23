@@ -53,9 +53,7 @@ const statusVaga = async (req,res) => {
 }
 const calculoTempo = async (req,res) => {
     const vaga = req.body.idvaga;
-    console.log("vaga",vaga)
     const tempo = await model.calculo(vaga);
-    console.log("tempo:",tempo)
     return res.status(208).json(tempo)
 }
 
