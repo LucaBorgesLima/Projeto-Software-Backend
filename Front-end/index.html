@@ -1,74 +1,52 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
     <link rel="stylesheet" href="assents/css/style.css">
-    <title>Formulário</title>
+  
 </head>
-
 <body>
-    <div class="container">
-        <div class="form-image">
-            <img src="assents/img/undraw_electric_car_b-7-hl.svg" alt="">
-        </div>
-        <div class="form">
-            <form action="#">
-                <div class="form-header">
-                    <div class="title">
-                        <h1>Cadastro do veículo</h1>
-                    </div>
-                    <div class="login-button">
-                        <button><a href="#">Voltar</a></button>
-                    </div>
-                </div>
+<div class="titulo">
+    <h1>Registro de Veículos</h1>
 
-                <div class="input-group">
-                    <div class="input-box">
-                        <label for="nome">Nome</label>
-                        <input id="nome" type="text" name="nome" placeholder="Pedro" required>
-                    </div>
+    <button id="btn">Adicionar Veículo</button>
+</div>
+    <p id="resposta"></p>
 
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Adicionar Veículo</h2>
+                <button id="close-btn" class="close-btn">Fechar</button>
+            </div>
+            <div class="modal-body">
+                <label for="nome">Nome:</label>
+                <input type="text" id="nome" placeholder="Nome do Proprietário"><br><br>
 
-                    <div class="input-box">
-                        <label for="telefone">Telefone</label>
-                        <input id="telefone" type="number" name="telefone" placeholder="(xx) xxxxx-xxxx" minlength="11" maxlength="11" required>
-                    </div>
+                <label for="telefone">Telefone:</label>
+                <input type="number" id="telefone" placeholder="Telefone"><br><br>
 
+                <label for="modelo">Modelo:</label>
+                <input type="text" id="modelo" placeholder="Modelo do Veículo"><br><br>
 
-                    <div class="input-box">
-                        <label for="modelo">Modelo do veículo</label>
-                        <input id="modelo" type="text" name="modelo" placeholder="Palio 2006" required>
-                    </div>
+                <label for="placa">Placa:</label>
+                <input type="text" id="placa" placeholder="Placa do Veículo"><br><br>
 
-                    <div class="input-box">
-                        <label for="placa">Placa</label>
-                        <input id="placa" type="text" name="placa" placeholder="AOZ2962" required>
-                    </div>
+                <label for="cor">Cor:</label>
+                <input type="text" id="cor" placeholder="Cor do Veículo"><br><br>
 
-                    <div class="input-box">
-                        <label for="cor">Cor</label>
-                        <input id="cor" type="text" name="cor" placeholder="Vermelho" required>
-                    </div>
-
-                           
-                    <div class="input-box">
-                        <label for="vaga">Escolha a vaga</label>
-                        <input id="vaga" type="number" name="vaga" placeholder="1 ao 12" min="1" max="12" required  >
-                    </div>
-
-                </div>
-            
-
-                <div class="continue-button">
-                    <button><a href="#" id="btn_continue">Continuar</a> </button>
-                </div>
-            </form>
+                <label for="vaga">Vaga:</label>
+                <input type="number" id="vaga" placeholder="Número da Vaga"><br><br>
+            </div>
+            <div class="modal-footer">
+                <button id="adicionar-btn">Adicionar</button>
+            </div>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
-
 </html>
