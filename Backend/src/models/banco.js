@@ -9,6 +9,7 @@ const conexao = mysql.createPool({
     user : process.env.MYSQL_USER,
     password : process.env.MYSQL_PASSWORD,
     database : process.env.MYSQL_DB,
+    connectTimeout: 20000
 });
 
-module.exports = conexao;         
+module.exports = conexao;            

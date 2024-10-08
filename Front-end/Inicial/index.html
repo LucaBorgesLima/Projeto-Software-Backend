@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Veículos</title>
+    <link rel="stylesheet" href="assents/css/style.css">
+</head>
+<body>
+
+    <div class="sidebar">
+        <br>
+        <br>
+        <form id="formCadastro">
+            <label for="nome">Nome</label>
+            <input id="nome" type="text" name="nome" required>
+
+            <br>
+    
+            <label for="telefone">Telefone</label>
+            <input id="telefone" type="text" name="telefone" required>
+
+            <br>
+    
+            <label for="placa">Placa</label>
+            <input id="placa" type="text" name="placa" required>
+
+            <br>
+    
+            <label for="cor">Cor</label>
+            <input id="cor" type="text" name="cor" required>
+
+            <br>
+    
+            <label for="modelo">Modelo</label>
+            <input id="modelo" type="text" name="modelo" required>
+
+            <br>
+    
+            <label for="marca">Marca</label>
+            <input id="marca" type="text" name="marca" required>
+    
+            <button type="submit">Cadastrar</button>
+        </form>
+
+        <h2 id="vagas-disponiveis">Vagas disponíveis: 15</h2>
+    </div>
+
+    <div class="content">
+        <div class="header">
+            <h1 class="left">Registro de Veículos</h1>
+            <button id="btn" class="add-btn right">Adicionar Veículo</button>
+        </div>
+
+        <div id="resposta"></div>
+
+    <form id="FormVaga">
+        
+        <label for="vaga">Vaga</label>
+        <input id="vaga" type="number" name="vaga" required>
+
+        <br>
+
+        <label for="placa-vaga">Placa</label>
+        <input id="placa-vaga" type="text" name="marca" required>
+
+        <button type="submit">ADD VAGA</button>
+    </form>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

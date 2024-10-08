@@ -4,6 +4,7 @@ const model = require('../models/model');
 
 
 const cadastrarClienteEVeiculo = async (req, res) => {
+    console.log(req.body)
     
     //  Cadastrar cliente e obter o idcliente
     const clienteResult = await model.cliente(req.body);
@@ -16,6 +17,7 @@ const cadastrarClienteEVeiculo = async (req, res) => {
 
     // Cadastrar veículo usando o idcliente
     const veiculoResult = await model.veiculo(veiculoData);
+    console.log(veiculoResult)
 
     // Retornar resposta com sucesso
         return res.status(201).json({
@@ -24,37 +26,51 @@ const cadastrarClienteEVeiculo = async (req, res) => {
             veiculo: veiculoResult
         });
     
-};
+};  
 
 const cadastrarVaga = async (req,res) => {
     const CadVaga = await model.vaga(req.body);
-    return res.status(202).json(CadVaga)
+    console.log(CadVaga)
+    return res.status(201).json({
+        message: 'Veiculo na vaga com sucesso!',    
+        Cadastrar:CadVaga
+    });
 
 };
-
+    
 const statos = async (req,res) => {
     const vagaStatos = await model.statusVaga();
-    return res.status(203).json(vagaStatos)
+    return res.status(201).json(vagaStatos)
 }
 
 const addVaga = async (req,res) => {
     const add = await model.EntradaVaga(req.body);
-    return res.status(204).json(add)
+    console.log(add)
+    return res.status(201).json({
+        message: 'Veiculo na vaga com sucesso!', 
+        Vaga:add
+    });     
 }
 
 const saida = async (req,res) => {
     const sair = await model.saida(req.body);
-    return res.status(205).json(sair)
+    return res.status(201).json(
+        {message: 'Saida do veículo com sucesso!',
+        saida:sair
+    });
 }
 
 const statusVaga = async (req,res) => {
     const vaga = await model.statu(req.body);
-    return res.status(207).json(vaga)
+    return res.status(201).json(vaga)
 }
 const calculoTempo = async (req,res) => {
     const vaga = req.body.idvaga;
     const tempo = await model.calculo(vaga);
-    return res.status(208).json(tempo)
+    return res.status(201).json({
+        message: 'Comrprovante de uso.',
+        Comprovante:tempo
+    });
 }
 
 module.exports = { cadastrarClienteEVeiculo,

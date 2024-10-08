@@ -2,7 +2,7 @@
 const { query } = require("express");
 const banco = require("./banco");
 const { DATETIME } = require("mysql/lib/protocol/constants/types");
-
+  
 
 
 // Visualizar as Vagas e Status
@@ -24,6 +24,7 @@ const cliente = async (pessoa) => {
 //Cadastro Veiculo
 const veiculo = async (car) => {
     const { placa, cor, modelo, marca, cliente_idcliente } = car;
+    console.log("Dados:",placa, cor, modelo,marca, cliente_idcliente )
     
     // Inserir marca e obter o idmarca
     const queryMarca = 'INSERT INTO marca (marca) VALUES (?) ON DUPLICATE KEY UPDATE idmarca=LAST_INSERT_ID(idmarca)';
@@ -39,7 +40,7 @@ const veiculo = async (car) => {
     // Inserir veículo com idmodelo e cliente_idcliente
     const queryVeiculo = 'INSERT INTO veiculo (placa, cor, cliente_idcliente, modelo_idmodelo) VALUES (?, ?, ?, ?)';
     const [resultVeiculo] = await banco.execute(queryVeiculo, [placa, cor, cliente_idcliente, idmodelo]);
-    
+      
     return {
         veiculo: resultVeiculo,
         modelo: resultModelo,
@@ -47,8 +48,8 @@ const veiculo = async (car) => {
 };
 
 // Cria uma vaga Livre
-const vaga = async (stato) => {
-    const {numero} = stato;
+const vaga = async (criar) => {
+    const {numero} = criar;
     const status = 'Livre'
 
     const queryVaga = 'INSERT INTO vaga (numero,status) VALUES (?,?)'
@@ -73,35 +74,47 @@ const formatDateForMySQL = (date) => {
 };
 
 //Add carro a vaga e marca horario de entrada
-const EntradaVaga = async (add) =>{
-    const {veiculo_idveiculo,idvaga} = add;
+const EntradaVaga = async (add) => {
+    const { placa,numero } = add;
     const horario_entrada = formatDateForMySQL(new Date());
 
-    //Validar se o carro nao esta em uma vaga 
-    const ValidarCarro = 'SELECT  idvaga FROM vaga WHERE veiculo_idveiculo = ? AND status = "ocupado"';
-    const [ValidarQuery] = await banco.execute(ValidarCarro, [veiculo_idveiculo]);
+    //Busca placa do veiculo
+    const buscarVeiculo = 'SELECT idveiculo FROM veiculo WHERE placa = ?';
+    const [veiculo] = await banco.execute(buscarVeiculo, [placa]);
 
-    if (ValidarQuery.length > 0) {
-        console.error('Erro Carro ja esta em uma vaga')
+    if (veiculo.length === 0) {
+        console.error('Erro  Veículo não encontrado');
         return;
     }
 
-    //Validar se a vaga esta Livre
-    const validar = 'SELECT * FROM vaga WHERE idvaga = ?'
-    const [validarVaga] = await banco.execute(validar, [idvaga]);
+    const veiculo_idveiculo = veiculo[0].idveiculo;
 
-    if (validarVaga[0]?.status === 'livre') {
+    //Validar se o carro já está em uma vaga
+    const ValidarCarro = 'SELECT numero FROM vaga WHERE placa = ? AND status = "ocupado"';
+    const [ValidarQuery] = await banco.execute(ValidarCarro, [placa]);
+
+    if (ValidarQuery.length > 0) {
+        console.error('Erro Carro já está em uma vaga');
+        return;
+    }
+   
+    //Validar se a vaga está livre
+    const validar = 'SELECT * FROM vaga WHERE numero = ?';
+    const [validarVaga] = await banco.execute(validar, [numero]);
+
+    if (validarVaga[0]?.status === 'Livre') {
         const status = 'ocupado';
-        const queryUp = 'UPDATE vaga SET status = ? ,horario_entrada = ? ,veiculo_idveiculo = ? WHERE idvaga = ?';
+        const queryUp = 'UPDATE vaga SET status = ?, horario_entrada = ?, placa = ?, veiculo_idveiculo = ? WHERE idvaga = ?';
+   
+        const [result] = await banco.execute(queryUp, [status, horario_entrada, placa, veiculo_idveiculo,numero]);
 
-        const[result] = await banco.execute(queryUp,[status,horario_entrada,veiculo_idveiculo,idvaga]);
-    
-        return result;
-        
-    }else {
-        console.error('ERRO VAGA NAO ESTA LIVRE OU NAO EXISTE')
-    };
-
+        return {
+            Vaga : result,
+            message: 'Veiculo na vaga com sucesso!'
+        };
+    } else {
+        console.error('Erro Vaga não está livre ou nao existe');
+    }
 };
 
 //Finalizar o uso da vaga do veiculo e mostra horario da saida do carro
@@ -121,7 +134,10 @@ const saida = async (vaga) => {
     const query = 'UPDATE vaga SET horario_saida = ?  WHERE idvaga = ?';
     const [result] = await banco.execute(query,[horario_saida,idvaga]);
 
-    return result;
+    return {
+        saida:result,
+        message: 'Saida do Veiculo sucesso!'
+    }; 
 };
 
 //Muda status da vaga quando fizer pagamento
@@ -131,12 +147,13 @@ const statu = async (muda) =>{
     const horario_entrada = null;
     const horario_saida = null;
     const veiculo_idveiculo = null ;
-    const query = 'UPDATE vaga SET status = ? ,horario_entrada = ? ,horario_saida = ?,veiculo_idveiculo = ?  WHERE idvaga = ?';
-
-    const [result] = await banco.execute(query,[status,horario_entrada,horario_saida,veiculo_idveiculo,idvaga])
-
+    const placa = null;
+    const query = 'UPDATE vaga SET status = ? ,horario_entrada = ? ,horario_saida = ?,veiculo_idveiculo = ? , placa = ?  WHERE idvaga = ?';
+   
+    const [result] = await banco.execute(query,[status,horario_entrada,horario_saida,veiculo_idveiculo,placa,idvaga])
+   
     return result;
-}; 
+};   
 
 //Funcao calculo/comprovante de uso
 const calculo = async (vagaid)=>{
@@ -170,20 +187,20 @@ const calculo = async (vagaid)=>{
 
     //Add Info na tabela de orcamento
     const preco = ValorTotal;
-    const data_criacao = formatDateForMySQL(new Date());
+    const data = formatDateForMySQL(new Date());
     const vaga_idvaga = vagaid;
 
-    const into = 'INSERT INTO orcamento (preco,data_criacao,vaga_idvaga) VALUES (?,?,?)';
-    const [AddOrcamento] = await banco.execute(into,[preco,data_criacao,vaga_idvaga]);
+    const into = 'INSERT INTO comprovante (preco,data,vaga_idvaga) VALUES (?,?,?)';
+    const [AddOrcamento] = await banco.execute(into,[preco,data,vaga_idvaga]);
     const idorcamento = AddOrcamento.insertId;
 
     const MostrarDado = `
-        SELECT ve.idveiculo, m.modelo, ve.placa, va.horario_entrada, va.horario_saida, o.preco
+        SELECT ve.idveiculo, m.modelo, ve.placa, va.horario_entrada, va.horario_saida, c.preco
         FROM vaga va
         JOIN veiculo ve ON va.veiculo_idveiculo = ve.idveiculo
         JOIN modelo m ON ve.modelo_idmodelo = m.idmodelo
-        JOIN orcamento o ON va.idvaga = o.vaga_idvaga
-        WHERE o.idorcamento = ?
+        JOIN comprovante c ON va.idvaga = c.vaga_idvaga
+        WHERE c.idcomprovante = ?
     `;
 
     const [comprovante] = await banco.execute(MostrarDado, [idorcamento]);
@@ -191,14 +208,14 @@ const calculo = async (vagaid)=>{
     return{
         AddOrcamento,
         comprovante,
-        Horas:horas,
-        Minutos:minutos
+        Horas:horas.toString(),
+        Minutos:minutos.toString()
     }
 
 }; 
 
           
-module.exports = {
+module.exports = {  
     cliente,
     veiculo,
     vaga,
@@ -207,4 +224,4 @@ module.exports = {
     saida,
     statu,
     calculo
-};                               
+};                                   
