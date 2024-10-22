@@ -10,10 +10,7 @@ router.post('/Cadastro',controle.cadastrarClienteEVeiculo );
    
 // Rota Cadastrar vagas
 router.post('/vaga',controle.cadastrarVaga);
-
-//Rota para ver vagas
-router.get('/verVaga',controle.statos);
-     
+            
 //Rota para add carro a uma vaga 
 router.put('/vagas',controle.addVaga);
 
@@ -27,4 +24,4 @@ router.put('/statusvaga',controle.statusVaga);
 router.post('/tempo',controle.calculoTempo);
 
    
-module.exports = router;                    
+module.exports = router;                                             

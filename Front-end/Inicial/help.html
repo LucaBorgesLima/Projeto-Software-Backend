@@ -1,23 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerenciador de Veículos</title>
+    <title>Document</title>
     <link rel="stylesheet" href="assents/css/style.css">
 </head>
-
 <body>
 
     <header id="header_content">
-        <div class="content">
-                <h1 class="left">Registro de Veículos</h1>            
-
-            <div id="resposta"></div>
-        </div>
+        <h1>Manual do Usuário</h1>
     </header>
-
+    
     <main>
 
     </main>
@@ -39,7 +33,7 @@
                         <br>
 
                         <label for="telefone">Telefone</label>
-                        <input id="telefone" type="text" name="telefone">
+                        <input id="telefone" type="text" name="telefone" >
 
                         <br>
 
@@ -78,26 +72,23 @@
                 </div>
                 <div class="modal-body2">
                     <form id="formCadastroVaga">
+                        <label for="vaga">Vaga</label>
+                        <input id="vaga" type="number" name="vaga" required>
+
+                        <br>
 
                         <label for="placa-vaga">Placa</label>
                         <input id="placa-vaga" type="text" name="placa-vaga" required>
                         <br>
 
-                        <button id="add" type="submit" class="open-modall">ADD VAGA</button>
-
-                        <div id="result"></div>
+                        <button type="submit">ADD VAGA</button>
                     </form>
                 </div>
             </div>
+
             <a href="payment.html" class="open-modall">Pagamentos</a>
-            <a href="help.html" class="open-modall">Ajuda</a>
+            <a href="index.html" class="open-modall">Home</a>
 
-
-            <div id="footer_subscribe">
-                <div id="input_group">
-
-                </div>
-            </div>
         </div>
 
         <div id="footer_copyright">
@@ -107,6 +98,7 @@
     </footer>
 
     <script src="script.js"></script>
-</body>
 
+
+</body>
 </html>
