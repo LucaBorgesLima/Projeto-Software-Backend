@@ -185,7 +185,24 @@ const calculo = async (CarPlaca) => {
         result:resultComprovante
     }
 
-}; 
+};
+
+const MostrarComprovante = async (PlacaComprovante) => {
+
+    const placa = PlacaComprovante;
+
+        const MostrarComprovante = "select ve.idveiculo,m.modelo,ve.placa,va.horario_entrada , va.horario_saida, c.preco from vaga va join veiculo ve on va.veiculo_idveiculo = ve.idveiculo join  modelo m on ve.modelo_idmodelo = m.idmodelo join comprovante c on va.idvaga = c.vaga_idvaga where c.placa = ? ;"
+
+    const ResultQuery = await banco.query(MostrarComprovante, [placa]);
+    console.log('foi mostrar comprovante'+ placa);
+    
+
+    return  ResultQuery[0]
+    
+
+};
+
+
  
           
 module.exports = {  
@@ -194,5 +211,7 @@ module.exports = {
     statusVaga,
     EntradaVaga,
     saida,
-    calculo
+    calculo,
+    MostrarComprovante
+
 };                                   

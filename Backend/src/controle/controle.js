@@ -68,12 +68,19 @@ const calculoTempo = async (req,res) => {
     });
 }
 
+const MostrarComprovante = async (req, res) => {
+    const comprovante = await model.MostrarComprovante(req.body.placa);
+
+    return res.status(201).json(comprovante);
+};
+
 module.exports = { cadastrarClienteEVeiculo,
     cadastrarVaga,
     addVaga,
     saida,
     statusVaga,
-    calculoTempo
+    calculoTempo,
+    MostrarComprovante
 
 
 }

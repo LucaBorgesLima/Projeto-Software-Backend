@@ -21,7 +21,10 @@ router.put('/saida',controle.saida);
 router.put('/statusvaga',controle.statusVaga);
 
 //Tempo de permanencia do carro 
-router.post('/tempo',controle.calculoTempo);
+router.post('/tempo', controle.calculoTempo);
+
+//Mostrar comprovante
+router.post('/vercomprovante', controle.MostrarComprovante);
 
    
 module.exports = router;                                             
