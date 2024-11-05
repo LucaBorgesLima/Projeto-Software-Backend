@@ -24,13 +24,18 @@ const cliente = async (pessoa) => {
 //Cadastro Veiculo
 const veiculo = async (car) => {
     const { placa, cor, modelo, marca, cliente_idcliente } = car;
-    console.log("Dados:",placa, cor, modelo,marca, cliente_idcliente )
+
+    const VerificarPlaca = 'SELECT * FROM veiculo WHERE placa = ?'
+    const ResultVerificar = await banco.execute(VerificarPlaca,[placa])
+    if (ResultVerificar.length > 0) {
+        console.log('Esse carro ja e nosso cliente')  
+    };
     
     // Inserir marca e obter o idmarca
     const queryMarca = 'INSERT INTO marca (marca) VALUES (?) ON DUPLICATE KEY UPDATE idmarca=LAST_INSERT_ID(idmarca)';
 
-    const [resultMarca] = await banco.execute(queryMarca, [marca]);
-    const idmarca = resultMarca.insertId;  
+    const [resultMarca] = await banco.execute(queryMarca, [marca]);  
+    const idmarca = resultMarca.insertId;     
     
     // Inserir modelo com o idmarca associado e obter idmodelo
     const queryModelo = 'INSERT INTO modelo (modelo, marca_idmarca) VALUES (?, ?) ON DUPLICATE KEY UPDATE idmodelo=LAST_INSERT_ID(idmodelo)';
@@ -38,6 +43,13 @@ const veiculo = async (car) => {
     const idmodelo = resultModelo.insertId;
     
     // Inserir veículo com idmodelo e cliente_idcliente
+    const VarificarPlaca = 'SELECT placa FROM veiculo WHERE placa = ?'
+
+    const resultVarificarPlaca = await banco.execute(VarificarPlaca, [placa])
+    if (resultVarificarPlaca.length === 1) {
+        console.log('ERRO PLACA JA CADASTRADA !!')
+    };
+
     const queryVeiculo = 'INSERT INTO veiculo (placa, cor, cliente_idcliente, modelo_idmodelo) VALUES (?, ?, ?, ?)';
     const [resultVeiculo] = await banco.execute(queryVeiculo, [placa, cor, cliente_idcliente, idmodelo]);
       
@@ -76,9 +88,8 @@ const EntradaVaga = async (add) => {
     const veiculo_idveiculo = veiculo[0].idveiculo;
 
     //Validar se o carro já está em uma vaga
-    const ValidarCarro = 'SELECT placa FROM vaga WHERE placa = ? ';
+    const ValidarCarro = 'SELECT placa FROM vaga WHERE placa = ?  AND horario_saida IS NULL';
     const [ValidarQuery] = await banco.execute(ValidarCarro, [placa]);
-
     if (ValidarQuery.length > 0) {
         console.err('Erro o carro ja esta estacionado ');
         return;
@@ -185,7 +196,7 @@ const calculo = async (CarPlaca) => {
         result:resultComprovante
     }
 
-};
+};    
 
 const MostrarComprovante = async (PlacaComprovante) => {
 
@@ -194,15 +205,28 @@ const MostrarComprovante = async (PlacaComprovante) => {
         const MostrarComprovante = "select ve.idveiculo,m.modelo,ve.placa,va.horario_entrada , va.horario_saida, c.preco from vaga va join veiculo ve on va.veiculo_idveiculo = ve.idveiculo join  modelo m on ve.modelo_idmodelo = m.idmodelo join comprovante c on va.idvaga = c.vaga_idvaga where c.placa = ? ;"
 
     const ResultQuery = await banco.query(MostrarComprovante, [placa]);
-    console.log('foi mostrar comprovante'+ placa);
+    console.log('foi mostrar comprovante:', placa , ":", ResultQuery);
     
 
     return  ResultQuery[0]
     
 
+};    
+
+const CancelarComprovante = async (placa) => {
+    const ComprovantePlaca = placa;
+
+    const RemoverComprovante = 'delete from `car parking`.`comprovante` where placa = ?;'
+    const ResultComprovante = await banco.execute(RemoverComprovante, [ComprovantePlaca]);
+
+   
+
+    const RemoverHorarioSaida = 'UPDATE `car parking`.`vaga` SET horario_saida = null WHERE placa = ? ;'
+    const Result = await banco.execute(RemoverHorarioSaida, [ComprovantePlaca]);
+
 };
 
-
+    
  
           
 module.exports = {  
@@ -212,6 +236,7 @@ module.exports = {
     EntradaVaga,
     saida,
     calculo,
-    MostrarComprovante
+    MostrarComprovante,
+    CancelarComprovante,
 
 };                                   

@@ -74,13 +74,22 @@ const MostrarComprovante = async (req, res) => {
     return res.status(201).json(comprovante);
 };
 
+const cancelarComprovante = async (req, res) => {
+    const comprovante = await model.CancelarComprovante(req.body.placa);
+    return res.status(201).json(comprovante)
+};
+
+
+
 module.exports = { cadastrarClienteEVeiculo,
     cadastrarVaga,
     addVaga,
     saida,
     statusVaga,
     calculoTempo,
-    MostrarComprovante
+    MostrarComprovante,
+    cancelarComprovante,
+ 
 
 
 }

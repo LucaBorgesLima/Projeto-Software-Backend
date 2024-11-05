@@ -26,5 +26,9 @@ router.post('/tempo', controle.calculoTempo);
 //Mostrar comprovante
 router.post('/vercomprovante', controle.MostrarComprovante);
 
+//rota cancelar comprovante 
+router.post('/cancelarcomprovante', controle.cancelarComprovante);   
+
+    
    
 module.exports = router;                                             

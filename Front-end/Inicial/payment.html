@@ -111,6 +111,102 @@
         </div>
     </footer>
 
-    
+    <script>
+
+
+        window.addEventListener("load", function() {
+            const comprovanteData = JSON.parse(localStorage.getItem('comprovante') || '[]');
+            comprovanteData.forEach((comprovante) => {
+                adicionarResultadoComprovanteNapagina(
+                    comprovante.Modelo,
+                    comprovante.placa,
+                    comprovante.HorarioEntrada,
+                    comprovante.HorarioSaida,
+                    comprovante.Preco
+                );
+            });
+        });
+
+
+
+        function adicionarResultadoComprovanteNapagina(comprovante) {
+            const container = document.getElementById("comprovante");
+            if (!container) {
+                console.error("Elemento com ID 'comprovante' não encontrado.");
+                return;
+            }
+
+            const novaDivComprovante = document.createElement("div");
+            novaDivComprovante.classList.add("comprovante");
+            
+            const RespostaModelo = document.createElement("p");
+            RespostaModelo.textContent = `Modelo: ${comprovante.Modelo}`;
+            
+            const RespostaPlaca = document.createElement("p");
+            RespostaPlaca.textContent = `Placa: ${comprovante.placa}`;
+            
+            const RespostaHorarioEntrada = document.createElement("p");
+            RespostaHorarioEntrada.textContent = `Horário de entrada: ${comprovante.HorarioEntrada}`;
+            
+            const RespostaHorarioSaida = document.createElement("p");
+            RespostaHorarioSaida.textContent = `Horário de saída: ${comprovante.HorarioSaida}`;
+            
+            const RespostaPreco = document.createElement("p");
+            RespostaPreco.textContent = `Preço: ${comprovante.Preco}`;
+
+            
+            const botaoPagamento = document.createElement("button");
+            botaoPagamento.textContent = "Pagar";
+            botaoPagamento.addEventListener("click", function() {
+                alert(`Criando Pagamento`);
+                novaDivComprovante.remove();
+                removerComprovanteDoLocalStorage(comprovante.placa)
+                
+            });
+
+            const CancelarComprovante = document.createElement("button");
+
+            CancelarComprovante.textContent = "cancelar";
+            CancelarComprovante.addEventListener("click",async function() {
+                alert(`Cancelamento Feito`);
+                const RespostaPlacaValue = RespostaPlaca.textContent.split(': ')[1]
+                const cancelar = await fetch(`http://localhost:8080/cancelarcomprovante?placa=${RespostaPlacaValue}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    placa:RespostaPlacaValue
+                })
+            });
+                console.log(cancelar)
+                const result = await cancelar.text();
+                novaDivComprovante.remove();
+                
+            });
+            novaDivComprovante.appendChild(RespostaModelo);
+            novaDivComprovante.appendChild(RespostaPlaca);
+            novaDivComprovante.appendChild(RespostaHorarioEntrada);
+            novaDivComprovante.appendChild(RespostaHorarioSaida);
+            novaDivComprovante.appendChild(RespostaPreco);
+            novaDivComprovante.appendChild(botaoPagamento);
+            novaDivComprovante.appendChild(CancelarComprovante);
+
+            novaDivComprovante.style.border = "1px solid black"; 
+            novaDivComprovante.style.padding = "10px"; 
+            novaDivComprovante.style.margin = "10px"; 
+
+            container.appendChild(novaDivComprovante);
+        }
+
+        function removerComprovanteDoLocalStorage(placa) {
+            let ComprovanteAtual = JSON.parse(localStorage.getItem('ComprovanteAtual')) || [];
+            ComprovanteAtual = ComprovanteAtual.filter(comprovante => comprovante.placa !== placa);
+            localStorage.setItem('comprovante', JSON.stringify(ComprovanteAtual));
+        }
+
+    </script>
 </body>
+
+
 </html>
