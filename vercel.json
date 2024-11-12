@@ -1,11 +1,11 @@
 {
     "version":2,
     "builds":[{
-        "src":"backend/src/serve.js",
+        "src":"src/serve.js",
         "use":"@vercel/node"
     }],
     "routes":[{
         "src":"(.*)",
-        "dest":"backend/src/serve.js"
+        "dest":"src/serve.js"
     }]
 }
