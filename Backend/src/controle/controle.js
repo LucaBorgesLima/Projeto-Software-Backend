@@ -79,6 +79,11 @@ const cancelarComprovante = async (req, res) => {
     return res.status(201).json(comprovante)
 };
 
+const ComprovantePago = async (req, res) => {
+    const paga = await model.pago(req.body.placa);
+    return res.status(200).json(paga)
+};
+
 
 
 module.exports = { cadastrarClienteEVeiculo,
@@ -89,6 +94,7 @@ module.exports = { cadastrarClienteEVeiculo,
     calculoTempo,
     MostrarComprovante,
     cancelarComprovante,
+    ComprovantePago
  
 
 

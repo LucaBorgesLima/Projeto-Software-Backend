@@ -73,6 +73,7 @@ const formatDateForMySQL = (date) => {
 
 //Add carro a vaga e marca horario de entrada
 const EntradaVaga = async (add) => {
+    const status = 'Estacionado'
     const { placa } = add;
     const horario_entrada = formatDateForMySQL(new Date());
 
@@ -97,9 +98,9 @@ const EntradaVaga = async (add) => {
    
 
     if (ValidarQuery.length === 0 ) {
-        const queryUp = 'INSERT INTO vaga (horario_entrada,placa,veiculo_idveiculo) VALUES (?, ?, ?)';
+        const queryUp = 'INSERT INTO vaga (horario_entrada,placa,veiculo_idveiculo,status) VALUES (?, ?, ?,?)';
    
-        const [result] = await banco.execute(queryUp, [horario_entrada, placa, veiculo_idveiculo]);
+        const [result] = await banco.execute(queryUp, [horario_entrada, placa, veiculo_idveiculo,status]);
 
         return {
             Vaga : result,
@@ -112,34 +113,28 @@ const EntradaVaga = async (add) => {
 
 //Finalizar o uso da vaga do veiculo e mostra horario da saida do carro
 const saida = async (vaga) => {
+    const status = 'concluido';
     const horario_saida = formatDateForMySQL(new Date());
     const { placa } = vaga;
 
     //Validar existe carro na vaga 
-    const ValidarVaga = 'SELECT * FROM vaga WHERE placa = ? AND veiculo_idveiculo IS NOT NULL';
+    const ValidarVaga = "SELECT * FROM vaga WHERE placa = ? AND status = 'Estacionado'";
     const [ValidarQuery] = await banco.execute(ValidarVaga, [placa]);
 
     if (ValidarQuery.length === 0) {
         console.error('Erro o carro nao esta estacionado')
         return;
     };
-
-    //Validar se carro ja nao saiu
-    const ValidarSaida = 'SELECT * FROM vaga WHERE horario_saida IS NOT NULL AND placa = ? ';
-    const [Validar] = await banco.execute(ValidarSaida,[placa])
-
-    if (Validar.length > 0) {
-        console.error("Erro carro ja saiu")
-        return;
-    };
-
-    const query = 'UPDATE vaga SET horario_saida = ?  WHERE placa = ?';
-    const [result] = await banco.execute(query,[horario_saida,placa]);
+  
+    const query = "UPDATE vaga SET horario_saida = ?, status = ?  WHERE placa = ? AND status = 'Estacionado'";
+    const [result] = await banco.execute(query,[horario_saida,status,placa]);
 
     return {
-        saida:result,
+        saida: result,
         message: 'Saida do Veiculo sucesso!'
-    }; 
+    };
+    
+   
 };
 
  
@@ -149,7 +144,7 @@ const calculo = async (CarPlaca) => {
 
     const placa = CarPlaca;
     
-    const query = 'SELECT horario_entrada,horario_saida,idvaga FROM vaga WHERE placa = ?';
+    const query = "SELECT horario_entrada,horario_saida,idvaga FROM vaga WHERE placa =  ? AND status = 'concluido'";
     const [result] = await banco.execute(query, [placa]);
     if (result === 0) {
         console.error("Erro: nenhum carro se encontra")
@@ -214,17 +209,32 @@ const MostrarComprovante = async (PlacaComprovante) => {
 };    
 
 const CancelarComprovante = async (placa) => {
+    const status = 'Estacionado';
     const ComprovantePlaca = placa;
 
-    const RemoverComprovante = 'delete from `car parking`.`comprovante` where placa = ?;'
+    const RemoverComprovante = "delete from `car parking`.`comprovante` where placa = ? AND status = 'concluido';"
     const ResultComprovante = await banco.execute(RemoverComprovante, [ComprovantePlaca]);
 
-   
-
-    const RemoverHorarioSaida = 'UPDATE `car parking`.`vaga` SET horario_saida = null WHERE placa = ? ;'
-    const Result = await banco.execute(RemoverHorarioSaida, [ComprovantePlaca]);
+    const RemoverHorarioSaida = 'UPDATE `car parking`.`vaga` SET horario_saida = null , status = ?  WHERE placa = ? ;'
+    const Result = await banco.execute(RemoverHorarioSaida, [status,ComprovantePlaca]);
 
 };
+
+const pago = async (PagoPlaca) => {
+
+    const placa = PagoPlaca;
+    const status = 'Pago';
+
+    const verificaRegistro = "SELECT * FROM `car parking`.`vaga` WHERE placa = ? AND status = 'concluido';";
+    const [resultado] = await banco.execute(verificaRegistro, [placa]);
+    console.log("Registro encontrado:", resultado);
+
+
+    const QueryPago = "UPDATE `car parking`.`vaga` SET  status = ?  WHERE placa = ? AND status = 'concluido'";
+    const ResultPago = await banco.execute(QueryPago, [status, placa]);
+    console.log(placa)
+    return ResultPago
+};     
 
     
  
@@ -238,5 +248,6 @@ module.exports = {
     calculo,
     MostrarComprovante,
     CancelarComprovante,
+    pago
 
 };                                   

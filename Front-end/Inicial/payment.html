@@ -112,29 +112,18 @@
     </footer>
 
     <script>
-
+        console.log(comprovante)
 
         window.addEventListener("load", function() {
             const comprovanteData = JSON.parse(localStorage.getItem('comprovante') || '[]');
             comprovanteData.forEach((comprovante) => {
-                adicionarResultadoComprovanteNapagina(
-                    comprovante.Modelo,
-                    comprovante.placa,
-                    comprovante.HorarioEntrada,
-                    comprovante.HorarioSaida,
-                    comprovante.Preco
-                );
+                adicionarResultadoComprovanteNapagina(comprovante);
             });
         });
 
-
-
-        function adicionarResultadoComprovanteNapagina(comprovante) {
+        async function adicionarResultadoComprovanteNapagina(comprovante) {
             const container = document.getElementById("comprovante");
-            if (!container) {
-                console.error("Elemento com ID 'comprovante' não encontrado.");
-                return;
-            }
+            
 
             const novaDivComprovante = document.createElement("div");
             novaDivComprovante.classList.add("comprovante");
@@ -156,22 +145,35 @@
 
             
             const botaoPagamento = document.createElement("button");
-            botaoPagamento.textContent = "Pagar";
-            botaoPagamento.addEventListener("click", function() {
+            botaoPagamento.textContent = "Cartao";
+            botaoPagamento.addEventListener("click", async function() {
                 alert(`Criando Pagamento`);
+
+                const PlacaPaga =  RespostaPlaca.textContent.split(': ')[1]
+                const pago = await fetch(`http://localhost:8080/paga?placa=${PlacaPaga}`,{
+                    method:'PUT',
+                    headers:{
+                        'Content-Type': 'application/json',
+                    },
+                    body:JSON.stringify({
+                        placa:PlacaPaga
+                    })
+                    
+                });
+                const Resultpaga = await pago.json();
+
                 novaDivComprovante.remove();
-                removerComprovanteDoLocalStorage(comprovante.placa)
-                
+                removerComprovanteDoLocalStorage(PlacaPaga)
             });
 
-            const CancelarComprovante = document.createElement("button");
+            const pixcomprovante = document.createElement("button");
 
-            CancelarComprovante.textContent = "cancelar";
-            CancelarComprovante.addEventListener("click",async function() {
-                alert(`Cancelamento Feito`);
+            pixcomprovante.textContent = "Pix";
+            pixcomprovante.addEventListener("click",async function() {
+                alert(`QR Code criado`);
                 const RespostaPlacaValue = RespostaPlaca.textContent.split(': ')[1]
-                const cancelar = await fetch(`http://localhost:8080/cancelarcomprovante?placa=${RespostaPlacaValue}`, {
-                method: 'POST',
+                const pagapix = await fetch(`http://localhost:8080/paga?placa=${RespostaPlacaValue}`, {
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -179,9 +181,10 @@
                     placa:RespostaPlacaValue
                 })
             });
-                console.log(cancelar)
-                const result = await cancelar.text();
+                console.log(pagapix)
+                const result = await pagapix.text();
                 novaDivComprovante.remove();
+                removerComprovanteDoLocalStorage(comprovante.placa)
                 
             });
             novaDivComprovante.appendChild(RespostaModelo);
@@ -190,20 +193,20 @@
             novaDivComprovante.appendChild(RespostaHorarioSaida);
             novaDivComprovante.appendChild(RespostaPreco);
             novaDivComprovante.appendChild(botaoPagamento);
-            novaDivComprovante.appendChild(CancelarComprovante);
+            novaDivComprovante.appendChild(pixcomprovante);
 
             novaDivComprovante.style.border = "1px solid black"; 
             novaDivComprovante.style.padding = "10px"; 
             novaDivComprovante.style.margin = "10px"; 
 
             container.appendChild(novaDivComprovante);
-        }
+        };
 
         function removerComprovanteDoLocalStorage(placa) {
-            let ComprovanteAtual = JSON.parse(localStorage.getItem('ComprovanteAtual')) || [];
-            ComprovanteAtual = ComprovanteAtual.filter(comprovante => comprovante.placa !== placa);
-            localStorage.setItem('comprovante', JSON.stringify(ComprovanteAtual));
-        }
+        let ComprovanteAtual = JSON.parse(localStorage.getItem('comprovante')) || [];
+        ComprovanteAtual = ComprovanteAtual.filter(comprovante => comprovante.placa !== placa);
+        localStorage.setItem('comprovante', JSON.stringify(ComprovanteAtual));
+        };
 
     </script>
 </body>

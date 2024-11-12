@@ -29,6 +29,9 @@ router.post('/vercomprovante', controle.MostrarComprovante);
 //rota cancelar comprovante 
 router.post('/cancelarcomprovante', controle.cancelarComprovante);   
 
+//rota paga comprovante
+router.put('/paga', controle.ComprovantePago);
+
     
    
-module.exports = router;                                             
+module.exports = router;                                                

@@ -192,26 +192,25 @@ function adicionarRegistroNaPagina(placa, horarioEntrada) {
 
       const ResultMostrarComprovante = await MostrarComprovante.json();
       if (ResultMostrarComprovante.length > 0) {
-        let comprovante =
-          JSON.parse(localStorage.getItem("comprovante")) || [];
-        comprovante.push({
+        let comprovante = JSON.parse(localStorage.getItem("comprovante")) || [];
+        const novoComprovante = {
           Modelo: ResultMostrarComprovante[0].modelo,
           placa: ResultMostrarComprovante[0].placa,
           HorarioEntrada: new Date(
-            ResultMostrarComprovante[0].horario_entrada
+              ResultMostrarComprovante[0].horario_entrada
           ).toLocaleTimeString(),
           HorarioSaida: new Date(
-            ResultMostrarComprovante[0].horario_saida
+              ResultMostrarComprovante[0].horario_saida
           ).toLocaleTimeString(),
           Preco: ResultMostrarComprovante[0].preco,
-
-        })      
+        };     
+        comprovante.push(novoComprovante);
         localStorage.setItem("comprovante", JSON.stringify(comprovante));
-         
-        localStorage.setItem("ComprovanteAtual", JSON.stringify(comprovante));
         window.location.href = "payment.html";
 
-        adicionarResultadoComprovanteNapagina(comprovante);
+        adicionarResultadoComprovanteNapagina(novaDiv);
+          
+        
       } else {
         console.warn("Nao tem nenhum comprovante nessa placa");
       }
