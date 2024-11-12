@@ -1,0 +1,183 @@
+-- MySQL Workbench Forward Engineering
+
+SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0;
+SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0;
+SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION';
+
+-- -----------------------------------------------------
+-- Schema mydb
+-- -----------------------------------------------------
+-- -----------------------------------------------------
+-- Schema car parking
+-- -----------------------------------------------------
+
+-- -----------------------------------------------------
+-- Schema car parking
+-- -----------------------------------------------------
+CREATE SCHEMA IF NOT EXISTS `car parking` DEFAULT CHARACTER SET utf8mb3 ;
+USE `car parking` ;
+
+-- -----------------------------------------------------
+-- Table `car parking`.`cliente`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `car parking`.`cliente` (
+  `idcliente` INT NOT NULL AUTO_INCREMENT,
+  `nome` VARCHAR(45) NOT NULL ,
+  `telefone` VARCHAR(12) NULL DEFAULT NULL,
+  PRIMARY KEY (`idcliente`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 83
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `car parking`.`marca`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `car parking`.`marca` (
+  `idmarca` INT NOT NULL AUTO_INCREMENT,
+  `marca` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`idmarca`),
+  UNIQUE INDEX `marca` (`marca` ASC) VISIBLE,
+  UNIQUE INDEX `marca_2` (`marca` ASC) VISIBLE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 82
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `car parking`.`modelo`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `car parking`.`modelo` (
+  `idmodelo` INT NOT NULL AUTO_INCREMENT,
+  `modelo` VARCHAR(45) NOT NULL,
+  `marca_idmarca` INT NOT NULL,
+  PRIMARY KEY (`idmodelo`),
+  UNIQUE INDEX `modelo` (`modelo` ASC, `marca_idmarca` ASC) VISIBLE,
+  UNIQUE INDEX `modelo_2` (`modelo` ASC, `marca_idmarca` ASC) VISIBLE,
+  INDEX `fk_modelo_marca1_idx` (`marca_idmarca` ASC) VISIBLE,
+  CONSTRAINT `fk_modelo_marca1`
+    FOREIGN KEY (`marca_idmarca`)
+    REFERENCES `car parking`.`marca` (`idmarca`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 82
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `car parking`.`veiculo`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `car parking`.`veiculo` (
+  `idveiculo` INT NOT NULL AUTO_INCREMENT,
+  `placa` VARCHAR(8) NOT NULL,
+  `cor` VARCHAR(45) NOT NULL,
+  `cliente_idcliente` INT NOT NULL,
+  `modelo_idmodelo` INT NOT NULL,
+  PRIMARY KEY (`idveiculo`),
+  UNIQUE INDEX `placa` (`placa` ASC) VISIBLE,
+  UNIQUE INDEX `placa_2` (`placa` ASC) VISIBLE,
+  INDEX `fk_veiculo_cliente_idx` (`cliente_idcliente` ASC) VISIBLE,
+  INDEX `fk_veiculo_modelo1_idx` (`modelo_idmodelo` ASC) VISIBLE,
+  CONSTRAINT `fk_veiculo_cliente`
+    FOREIGN KEY (`cliente_idcliente`)
+    REFERENCES `car parking`.`cliente` (`idcliente`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_veiculo_modelo1`
+    FOREIGN KEY (`modelo_idmodelo`)
+    REFERENCES `car parking`.`modelo` (`idmodelo`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+AUTO_INCREMENT = 81
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `car parking`.`vaga`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `car parking`.`vaga` (
+  `idvaga` INT NOT NULL AUTO_INCREMENT,
+  `horario_entrada` DATETIME NOT NULL,
+  `horario_saida` DATETIME NULL DEFAULT NULL,
+  `placa` VARCHAR(45) NOT NULL,
+  `veiculo_idveiculo` INT NOT NULL,
+  PRIMARY KEY (`idvaga`),
+  INDEX `fk_vaga_veiculo1_idx` (`veiculo_idveiculo` ASC) VISIBLE,
+  CONSTRAINT `fk_vaga_veiculo1`
+    FOREIGN KEY (`veiculo_idveiculo`)
+    REFERENCES `car parking`.`veiculo` (`idveiculo`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 73
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `car parking`.`comprovante`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `car parking`.`comprovante` (
+  `idcomprovante` INT NOT NULL AUTO_INCREMENT,
+  `preco` DECIMAL(10,2) NOT NULL,
+  `data` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `placa` VARCHAR(45) NOT NULL,
+  `vaga_idvaga` INT NOT NULL,
+  PRIMARY KEY (`idcomprovante`),
+  UNIQUE INDEX `data_UNIQUE` (`data` ASC) VISIBLE,
+  INDEX `fk_comprovante_vaga1_idx` (`vaga_idvaga` ASC) VISIBLE,
+  CONSTRAINT `fk_comprovante_vaga1`
+    FOREIGN KEY (`vaga_idvaga`)
+    REFERENCES `car parking`.`vaga` (`idvaga`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+AUTO_INCREMENT = 42
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+-- -----------------------------------------------------
+-- Table `car parking`.`pagamento`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `car parking`.`pagamento` (
+  `idpagamento` INT NOT NULL AUTO_INCREMENT,
+  `tipo_pagamento` VARCHAR(45) NOT NULL,
+  `placa` VARCHAR(45) NOT NULL,
+  `comprovante_idcomprovante` INT NOT NULL,
+  PRIMARY KEY (`idpagamento`),
+  INDEX `fk_pagamento_comprovante1_idx` (`comprovante_idcomprovante` ASC) VISIBLE,
+  CONSTRAINT `fk_pagamento_comprovante1`
+    FOREIGN KEY (`comprovante_idcomprovante`)
+    REFERENCES `car parking`.`comprovante` (`idcomprovante`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb3;
+
+
+SET SQL_MODE=@OLD_SQL_MODE;
+SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS;
+SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS;
+
+SET SQL_SAFE_UPDATES = 0;
+
+
+ALTER TABLE cliente AUTO_INCREMENT = 1;
+ALTER TABLE modelo AUTO_INCREMENT = 1;
+ALTER TABLE marca AUTO_INCREMENT = 1;
+ALTER TABLE vaga AUTO_INCREMENT = 1;
+ALTER TABLE comprovante AUTO_INCREMENT = 1;
+ALTER TABLE pagamento AUTO_INCREMENT = 1;
+ALTER TABLE veiculo AUTO_INCREMENT = 1;
+
+select * from cliente;
+select * from veiculo;
+select * from vaga;
+select * from comprovante;
+select *  from modelo ; 
+select * from marca ;
+
+
+
+
+
+
